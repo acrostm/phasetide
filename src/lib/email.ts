@@ -2,7 +2,6 @@ import { site } from "./site";
 
 export type EmailContent = {
   subject: string;
-  text: string;
   html: string;
 };
 
@@ -77,26 +76,6 @@ export function buildAcknowledgmentEmail(lead: Lead): EmailContent {
   const greeting = `您好，${lead.name}，`;
   const service = lead.service || "您关心的方向";
 
-  const text = [
-    greeting,
-    "",
-    `感谢您联系${site.company}。我们已收到您关于「${service}」的咨询，并将尽快安排专人与您联系。`,
-    "",
-    "为便于跟进，我们的回复将发送至您留下的邮箱。通常在 1–2 个工作日内您会收到回复；如您的需求较为紧急，可直接回复本邮件说明。",
-    "",
-    "您的联系方式：",
-    `  邮箱：${lead.email}`,
-    `  公司：${lead.company || "未填写"}`,
-    "",
-    "此致",
-    "PhaseTide 相位潮汐",
-    site.company,
-    `网站：${site.url}`,
-    `邮箱：${site.email}`,
-    "",
-    "本邮件由系统自动发送。如需进一步帮助，请直接发送邮件至上述邮箱。",
-  ].join("\n");
-
   const html = layout(`
     <p style="margin:0 0 18px;font-size:15px;line-height:1.7;color:${ink};">${escapeHtml(greeting)}</p>
     <p style="margin:0 0 14px;font-size:14px;line-height:1.8;color:#374151;">感谢您联系 <strong>${site.company}</strong>。我们已收到您关于「${escapeHtml(service)}」的咨询，并将尽快安排专人与您联系。</p>
@@ -109,25 +88,11 @@ export function buildAcknowledgmentEmail(lead: Lead): EmailContent {
     <p style="margin:26px 0 0;font-size:14px;line-height:1.8;color:#374151;">此致，<br />PhaseTide 相位潮汐 · ${site.company}</p>
   `);
 
-  return { subject, text, html };
+  return { subject, html };
 }
 
 export function buildLeadEmail(lead: Lead): EmailContent {
   const subject = `官网咨询 · ${lead.service} · ${lead.name}`;
-  const text = [
-    "收到新的官网咨询：",
-    "",
-    `姓名：${lead.name}`,
-    `邮箱：${lead.email}`,
-    `公司：${lead.company || "未填写"}`,
-    `感兴趣的服务：${lead.service}`,
-    "",
-    "项目需求：",
-    lead.message,
-    "",
-    "客户已同意就此需求联系。",
-    "直接回复本邮件即可回复客户。",
-  ].join("\n");
 
   const html = layout(`
     <p style="margin:0 0 20px;font-size:16px;font-weight:600;color:${ink};">新的官网咨询</p>
@@ -142,5 +107,5 @@ export function buildLeadEmail(lead: Lead): EmailContent {
     <p style="margin:22px 0 0;font-size:13px;color:${muted};">客户已同意就此需求联系。直接回复本邮件即可回复客户。</p>
   `);
 
-  return { subject, text, html };
+  return { subject, html };
 }

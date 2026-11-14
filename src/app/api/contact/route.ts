@@ -95,7 +95,6 @@ export async function POST(request: NextRequest) {
           from: { address: from, name: "PhaseTide 相位潮汐" },
           ...(replyTo ? { reply_to: replyTo } : {}),
           subject: content.subject,
-          text: content.text,
           html: content.html,
         }),
         signal: AbortSignal.timeout(10000),
