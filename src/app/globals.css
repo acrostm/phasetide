@@ -1,0 +1,81 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--background);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--background);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #f3f5f8;
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: #f3f5f8;
+  --color-muted-foreground: #60646e;
+  --color-accent: #edf1ff;
+  --color-accent-foreground: var(--primary);
+  --color-destructive: #b42318;
+  --color-border: #e2e4e9;
+  --color-input: #d7dae1;
+  --color-ring: var(--primary);
+  --color-brand-ink: #090d38;
+  --color-brand-mint: #4fe0bf;
+  --color-brand-lavender: #a792f0;
+  --color-inverse: #181a20;
+  --color-inverse-foreground: #fafafa;
+  --color-inverse-muted: #a9aebc;
+  --font-sans:
+    "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-heading: var(--font-sans);
+  --font-mono: "SFMono-Regular", Consolas, monospace;
+  --radius-sm: 3px;
+  --radius-md: 4px;
+  --radius-lg: 5px;
+  --radius-xl: 8px;
+}
+:root {
+  --background: #ffffff;
+  --foreground: #191b22;
+  --primary: #2455f5;
+  --radius: 5px;
+}
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 100px;
+  }
+  ::selection {
+    background: #dce5ff;
+    color: #191b22;
+  }
+  button,
+  a,
+  select,
+  input[type="checkbox"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+  a:focus-visible {
+    @apply rounded-sm outline-2 outline-offset-4 outline-ring;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
