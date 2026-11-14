@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createHash } from "node:crypto";
 import { validateLead } from "@/lib/contact";
 import { site } from "@/lib/site";
+
 export const runtime = "nodejs";
+
 export async function POST(request: NextRequest) {
   const origin = request.headers.get("origin");
   // Next's internal URL may use localhost behind a reverse proxy. Compare
@@ -13,7 +14,9 @@ export async function POST(request: NextRequest) {
     sameOrigin =
       ["http:", "https:"].includes(parsed.protocol) &&
       parsed.host === request.headers.get("host");
-  } catch { /* Invalid or absent Origin is rejected below. */ }
+  } catch {
+    /* Invalid or absent Origin is rejected below. */
+  }
   if (!sameOrigin)
     return NextResponse.json(
       { message: "请求来源无效，请刷新页面后重试。" },
@@ -21,6 +24,7 @@ export async function POST(request: NextRequest) {
     );
   if (!request.headers.get("content-type")?.includes("application/json"))
     return NextResponse.json({ message: "请求格式无效。" }, { status: 415 });
+
   // Bound the stream itself, rather than trusting Content-Length.
   const reader = request.body?.getReader();
   if (!reader)
@@ -40,12 +44,14 @@ export async function POST(request: NextRequest) {
     }
     chunks.push(value);
   }
+
   let raw: unknown;
   try {
     raw = JSON.parse(Buffer.concat(chunks).toString("utf8"));
   } catch {
     return NextResponse.json({ message: "请求格式无效。" }, { status: 400 });
   }
+
   const { data, errors } = validateLead(raw);
   if (!data)
     return NextResponse.json(
@@ -57,9 +63,11 @@ export async function POST(request: NextRequest) {
       { message: "提交未完成，请通过邮件联系。" },
       { status: 400 },
     );
-  const key = process.env.RESEND_API_KEY;
+
+  const token = process.env.CLOUDFLARE_API_TOKEN;
+  const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
   const from = process.env.CONTACT_FROM_EMAIL;
-  if (!key || !from)
+  if (!token || !accountId || !from)
     return NextResponse.json(
       {
         message:
@@ -67,6 +75,7 @@ export async function POST(request: NextRequest) {
       },
       { status: 503 },
     );
+
   const text = [
     `姓名：${data.name}`,
     `邮箱：${data.email}`,
@@ -78,26 +87,26 @@ export async function POST(request: NextRequest) {
     "",
     "客户已同意就此需求联系。",
   ].join("\n");
-  const digest = createHash("sha256")
-    .update(JSON.stringify(data))
-    .digest("hex");
+
   try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-        "Idempotency-Key": `lead-${digest}`,
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${accountId}/email/sending/send`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: [site.email],
+          from: { address: from, name: "PhaseTide" },
+          reply_to: data.email,
+          subject: `PhaseTide 官网咨询 · ${data.service}`,
+          text,
+        }),
+        signal: AbortSignal.timeout(10000),
       },
-      body: JSON.stringify({
-        from,
-        to: [site.email],
-        reply_to: data.email,
-        subject: `PhaseTide 官网咨询 · ${data.service}`,
-        text,
-      }),
-      signal: AbortSignal.timeout(10000),
-    });
+    );
     if (!response.ok) throw new Error("Delivery rejected");
     return NextResponse.json({
       message: "需求已发送。我们会通过您留下的邮箱与您联系。",

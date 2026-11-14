@@ -27,7 +27,7 @@ npm run dev
 
 表单字段：姓名、邮箱、公司（选填）、服务方向、项目需求、联系授权。接口位于 `src/app/api/contact/route.ts`。
 
-通过 Resend 向 **contact@phasetide.com** 发送需求（邮箱为固定服务端收件人）。Reply-To 为客户邮箱，支持直接回复。
+通过 Cloudflare Email Sending 向 **contact@phasetide.com** 发送需求（邮箱为固定服务端收件人）。Reply-To 为客户邮箱，支持直接回复。
 
 ```sh
 cp .env.example .env.local
@@ -35,12 +35,13 @@ cp .env.example .env.local
 
 配置：
 
-- `RESEND_API_KEY`：Resend 的邮件发送 API key。
-- `CONTACT_FROM_EMAIL`：已在 Resend 验证的域名邮箱，例如 `PhaseTide Website <website@phasetide.com>`。
+- `CLOUDFLARE_API_TOKEN`：具备 Email Sending 权限的 Cloudflare API Token。
+- `CLOUDFLARE_ACCOUNT_ID`：Cloudflare 账户 ID。
+- `CONTACT_FROM_EMAIL`：Cloudflare 域下已验域的发信邮箱地址。
 
 密钥仅在服务端使用，不得加 `NEXT_PUBLIC_` 前缀。需要先验证发信域名，并确保 contact@phasetide.com 实际可收件。
 
-未配置邮件服务时，接口返回 503，UI 明确说明信息尚未发送并提供邮箱。发送失败保留表单；成功才清空。使用共享前后端校验、同源检查、24 KB 请求体限制、蜜罐字段、超时和 Resend 幂等键。幂等键对完全相同的需求去重，依照 Resend 的保留周期生效。没有将线索写入 Vercel 临时磁盘或浏览器存储。
+未配置邮件服务时，接口返回 503，UI 明确说明信息尚未发送并提供邮箱。发送失败保留表单；成功才清空。使用共享前后端校验、同源检查、24 KB 请求体限制、蜜罐字段和超时。没有将线索写入 Vercel 临时磁盘或浏览器存储。
 
 ## 维护结构
 
@@ -61,4 +62,4 @@ cp .env.example .env.local
 - [Next.js 服务端与客户端组件](https://nextjs.org/docs/app/getting-started/server-and-client-components)
 - [shadcn/ui Next.js 安装](https://ui.shadcn.com/docs/installation/next)
 - [Vercel 环境变量](https://vercel.com/docs/environment-variables)
-- [Resend 邮件接口](https://resend.com/docs/api-reference/emails/send-email)
+- [Cloudflare Email Sending](https://developers.cloudflare.com/email-service/get-started/send-email/)
