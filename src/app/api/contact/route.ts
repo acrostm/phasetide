@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { validateLead } from "@/lib/contact";
 import { site } from "@/lib/site";
+import {
+  buildAcknowledgmentEmail,
+  buildLeadEmail,
+  type EmailContent,
+} from "@/lib/email";
 
 export const runtime = "nodejs";
 
@@ -76,20 +81,8 @@ export async function POST(request: NextRequest) {
       { status: 503 },
     );
 
-  const text = [
-    `姓名：${data.name}`,
-    `邮箱：${data.email}`,
-    `公司：${data.company || "未填写"}`,
-    `服务：${data.service}`,
-    "",
-    "项目需求：",
-    data.message,
-    "",
-    "客户已同意就此需求联系。",
-  ].join("\n");
-
-  try {
-    const response = await fetch(
+  const send = (to: string, content: EmailContent, replyTo?: string) =>
+    fetch(
       `https://api.cloudflare.com/client/v4/accounts/${accountId}/email/sending/send`,
       {
         method: "POST",
@@ -98,16 +91,30 @@ export async function POST(request: NextRequest) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          to: [site.email],
-          from: { address: from, name: "PhaseTide" },
-          reply_to: data.email,
-          subject: `PhaseTide 官网咨询 · ${data.service}`,
-          text,
+          to: [to],
+          from: { address: from, name: "PhaseTide 相位潮汐" },
+          ...(replyTo ? { reply_to: replyTo } : {}),
+          subject: content.subject,
+          text: content.text,
+          html: content.html,
         }),
         signal: AbortSignal.timeout(10000),
       },
     );
-    if (!response.ok) throw new Error("Delivery rejected");
+
+  const lead = buildLeadEmail(data);
+  const acknowledgment = buildAcknowledgmentEmail(data);
+
+  try {
+    const [leadResult] = await Promise.allSettled([
+      send(site.email, lead, data.email),
+      send(data.email, acknowledgment),
+    ]);
+
+    const leadOk =
+      leadResult.status === "fulfilled" && leadResult.value.ok;
+    if (!leadOk) throw new Error("Lead delivery failed");
+
     return NextResponse.json({
       message: "需求已发送。我们会通过您留下的邮箱与您联系。",
     });
