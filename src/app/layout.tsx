@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { site } from "@/lib/site";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -26,7 +27,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="zh-CN" className="antialiased">
-      <body id="top">{children}</body>
+      <body id="top">
+        {children}
+        <SpeedInsights />
+      </body>
     </html>
   );
 }
