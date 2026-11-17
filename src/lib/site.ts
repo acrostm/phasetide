@@ -2,7 +2,7 @@ export const site = {
   name: "PhaseTide",
   company: "深圳相位潮汐科技有限公司",
   email: "contact@phasetide.com",
-  url: "https://phasetide.com",
+  url: "https://www.phasetide.com",
   description:
     "PhaseTide 相位潮汐，为企业提供软件开发、FDE 嵌入式工程、AI 训练与部署解决方案。从业务现场出发，让技术真正落地。",
 };
